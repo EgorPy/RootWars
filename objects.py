@@ -124,11 +124,13 @@ class Text(Label):
         [self.game.app.DISPLAY.blit(self.surface_list[i], self.pos_list[i]) for i in range(self.lines)]
 
 
-class Hexagon:
+class Hexagon(Label):
     surface_size = [300, 300]
-    height_scale = 2
+    height_scale = 1
 
-    def __init__(self, game, pos=[0, 0], color=(255, 255, 255), outline_color=(10, 10, 10), width=5, hexagon_size=[100, 100], hex_pos=[], energy=0):
+    def __init__(self, game, pos=[0, 0], color=(255, 255, 255), outline_color=(10, 10, 10), width=5, hexagon_size=[100, 100], hex_pos=[], energy=0,
+                 text="", font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None):
+        super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
         self.game = game
 
         self.pos = pos
@@ -137,6 +139,8 @@ class Hexagon:
         self.outline_color = outline_color
         self.width = width
         self.hexagon_size = [hexagon_size[0] // 2, hexagon_size[1] // 2]
+        self.text_surface = self.font.render(self.text, self.smooth, self.foreground, self.background)
+        self.touched = False
 
         # game variables
         self.energy = energy
@@ -144,13 +148,14 @@ class Hexagon:
         self.draw_hexagon()
 
     def draw_hexagon(self):
+        self.text_surface = self.font.render(str(int(self.energy)), self.smooth, self.foreground, self.background)
         self.surface = pygame.Surface(self.surface_size)
         self.surface.set_colorkey((0, 0, 0))
 
         # self.surface.fill((0, 0, 0))
         # self.surface.fill((255, 255, 255))
         self.pos_list = [[0, math.cos(deg_to_rad(60)) * self.hexagon_size[1] * 2.9 + self.width]]
-        for i in range(1, 7):
+        for i in range(1, 6):
             p = [
                 self.pos_list[i - 1][0] + round(math.sin(deg_to_rad(i * 60)) * self.hexagon_size[0]),
                 self.pos_list[i - 1][1] + round(math.cos(deg_to_rad(i * 60)) * self.hexagon_size[1])
@@ -161,28 +166,35 @@ class Hexagon:
             i[1] = self.surface_size[1] - i[1]
         if self.energy > 0:
             pygame.draw.lines(self.surface, self.outline_color, False, self.pos_list, self.width)
-            for i in range(self.energy):
+            for i in range(int(self.energy)):
                 energy_pos_list = []
                 for j in self.pos_list:
-                    energy_pos_list.append([j[0] - i * self.height_scale, j[1] - i * self.height_scale])
-                # if i % height_scale == 0:
-                color = [self.color[0] - i * 15 if self.color[0] != 0 else self.color[0],
-                         self.color[1] - i * 15 if self.color[1] != 0 else self.color[1],
-                         self.color[2] - i * 15 if self.color[2] != 0 else self.color[2]]
+                    pos = [j[0] - i * self.height_scale, j[1] - i * self.height_scale]
+                    energy_pos_list.append(pos)
+                color = [self.color[0] - i * self.height_scale if self.color[0] != 0 else self.color[0],
+                         self.color[1] - i * self.height_scale if self.color[1] != 0 else self.color[1],
+                         self.color[2] - i * self.height_scale if self.color[2] != 0 else self.color[2]]
                 color[0] = 0 if color[0] < 0 else color[0]
                 color[1] = 0 if color[1] < 0 else color[1]
                 color[2] = 0 if color[2] < 0 else color[2]
                 color[0] = 255 if color[0] > 255 else color[0]
                 color[1] = 255 if color[1] > 255 else color[1]
                 color[2] = 255 if color[2] > 255 else color[2]
-                # print(color)
+
                 pygame.draw.polygon(self.surface, color, energy_pos_list)
+                if i % 5 == 0:
+                    pygame.draw.lines(self.surface, self.outline_color, True, energy_pos_list, self.width)
         else:
             pygame.draw.polygon(self.surface, self.color, self.pos_list)
-            pygame.draw.lines(self.surface, self.outline_color, False, self.pos_list, self.width)
+            pygame.draw.lines(self.surface, self.outline_color, True, self.pos_list, self.width)
+
+        self.text_surface = self.font.render(str(int(self.energy)), self.smooth, self.foreground, self.background)
 
     def update(self, mouse_buttons, mouse_position, events, keys):
         self.game.app.DISPLAY.blit(self.surface, [self.pos[0] + self.game.cords[0], self.pos[1] + self.game.cords[1]])
+        if self.energy > 0:
+            self.game.app.DISPLAY.blit(self.text_surface, [self.pos[0] + self.game.cords[0] + self.surface_size[0] - 50 - self.energy * self.height_scale - self.text_surface.get_size()[0] / 2,
+                                                           self.pos[1] + self.game.cords[1] + self.surface_size[0] - 90 - self.energy * self.height_scale])
 
     def zoom(self, size, pos):
         self.pos = pos

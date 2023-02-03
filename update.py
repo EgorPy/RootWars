@@ -168,8 +168,7 @@ class Game:
         self.player.set_color((0, 0, 255))
         self.player.set_energy(1)
 
-        self.selected_hexagon = self.hexagons[66]
-        self.get_nearby_hexagons()
+        self.selected_hexagon = None
 
         self.cords = [-1385 + self.app.WIDTH / 2 - Hexagon.surface_size[0], -2250 + self.app.HEIGHT / 2 - Hexagon.surface_size[1]]
 
@@ -199,10 +198,20 @@ class Game:
             clear()
             self.create_game_objects()
 
+    def select_hexagon(self, obj):
+        self.selected_hexagon = obj
+        self.selected_hexagon.set_color(self.selected_hexagon_color)
+
+    def create_hexagon(self, obj):
+        self.selected_hexagon.set_energy(self.selected_hexagon.energy - 1)
+        obj.set_color(self.player_color)
+        obj.set_energy(1)
+        self.player_hexagons.append(obj)
+        self.selected_hexagon = obj
+
     def get_nearby_hexagons(self):
         if self.selected_hexagon is not None:
             # print(self.selected_hexagon)
-            self.selected_hexagon.set_color(self.selected_hexagon_color)
             # locate nearby hexagons by pos
             self.nearby_hexagons.clear()
             self.nearby_pos.clear()
@@ -220,24 +229,27 @@ class Game:
                     if touched(obj.pos[0] + self.cords[0] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, pos2[0], 1,
                                obj.pos[1] + self.cords[1] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, pos2[1], 1) and obj not in self.player_hexagons:
                         color = (0, 255, 0)
-                        pygame.draw.line(self.app.DISPLAY, color, pos1, pos2, 10)
-                        self.nearby_pos.append([pos1, pos2, color])
+                        # pygame.draw.line(self.app.DISPLAY, color, pos1, pos2, 10)
+                        self.nearby_pos.append([pos1, pos2, obj, color])
+                        obj.set_color((0, 255, 0))
                         self.nearby_hexagons.append(obj)
                     # else:
                     #     color = (255, 0, 0)
                     #     pygame.draw.line(self.app.DISPLAY, color, pos1, pos2, 10)
 
     def draw_nearby_hex_lines(self):
-        # print(len(self.nearby_pos))
+        pass
+        # print(len(self.nearby_hexagons))
         # pygame.draw.line(self.app.DISPLAY, (255, 0, 0),
         #                  [self.nearby_pos[0][0][0] + self.cords[0], self.nearby_pos[0][0][1] + self.cords[1]],
         #                  [self.nearby_pos[0][1][1] + self.cords[0], self.nearby_pos[0][1][1] + self.cords[1]], 5)
-        for i, obj in enumerate(self.nearby_hexagons):
-            pos1 = [self.player.pos_list[i][0] + obj.pos[0] + self.cords[0],
-                    self.player.pos_list[i][1] + obj.pos[1] + self.cords[1]]
-            pos2 = [round(pos1[0] - math.sin(deg_to_rad(i * 60 + 120)) * (self.hexagon_grid_length * 2 - 20)),
-                    round(pos1[1] - math.cos(deg_to_rad((i * 60 + 120))) * (self.hexagon_grid_length * 2 - 20))]
-            pygame.draw.line(self.app.DISPLAY, (0, 255, 0), pos1, pos2, 10)
+        # for i, obj in enumerate(self.nearby_hexagons):
+        # for j, p in enumerate(self.nearby_pos):
+        #     pos1 = [p[j][0] + self.nearby_hexagons[j].pos[0] + self.cords[0],
+        #             p[j][1] + self.nearby_hexagons[j].pos[1] + self.cords[1]]
+        #     pos2 = [round(pos1[0] - math.sin(deg_to_rad(j * 60 + 120)) * (self.hexagon_grid_length * 2 - 20)),
+        #             round(pos1[1] - math.cos(deg_to_rad((j * 60 + 120))) * (self.hexagon_grid_length * 2 - 20))]
+        #     pygame.draw.line(self.app.DISPLAY, (0, 255, 0), pos1, pos2, 10)
 
     def update(self, mouse_buttons, mouse_position, events, keys):
         # put game code here
@@ -304,6 +316,38 @@ class Game:
                         pos = self.get_pos_for_hex_grid(obj.hex_pos, self.hexagon_size)
                         obj.zoom(size, pos)
 
+                if event.type == pygame.MOUSEBUTTONDOWN and not self.FIRST_ITERATION:
+                    for i, obj in enumerate(self.hexagons):
+                        if obj == self.player or obj in self.player_hexagons:
+                            obj.set_color(self.player_color)
+                        elif obj in self.nearby_hexagons:
+                            obj.set_color(self.grid_hex_color)
+                        else:
+                            obj.set_color(self.grid_hex_color)
+                    for i, obj in enumerate(self.hexagons):
+                        if touched(obj.pos[0] + self.cords[0] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, mouse_position[0], 1,
+                                   obj.pos[1] + self.cords[1] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, mouse_position[1], 1):
+                            if obj == self.player or obj in self.player_hexagons and obj.energy > 1:
+                                self.select_hexagon(obj)
+                                # pygame.draw.rect(self.app.DISPLAY, (255, 0, 0), pygame.Rect([obj.pos[0] + self.cords[0] + Hexagon.surface_size[0] / 2,
+                                #                                                             obj.pos[1] + self.cords[1] + Hexagon.surface_size[0] / 2],
+                                #                                                             [Hexagon.surface_size[0] / 2,
+                                #                                                              Hexagon.surface_size[0] / 2]))
+                                self.get_nearby_hexagons()
+                            if obj in self.nearby_hexagons and self.selected_hexagon is not None:
+                                print(123)
+                                self.create_hexagon(obj)
+                                self.select_hexagon(obj)
+                                self.get_nearby_hexagons()
+                                break
+                # elif event.type == pygame.MOUSEBUTTONUP and not self.FIRST_ITERATION:
+                #     for i, obj in enumerate(self.hexagons):
+                #         if not touched(obj.pos[0] + self.cords[0] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, mouse_position[0], 1,
+                #                    obj.pos[1] + self.cords[1] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, mouse_position[1], 1):
+                #             if obj not in self.nearby_hexagons or self.selected_hexagon is None:
+                #                 obj.set_color(self.grid_hex_color)
+                # print(self.selected_hexagon)
+
                 # if event.type == pygame.MOUSEBUTTONDOWN and not self.FIRST_ITERATION:
                 #     for i, obj in enumerate(self.hexagons):
                 #         if touched(obj.pos[0] + self.cords[0] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, mouse_position[0], 1,
@@ -311,19 +355,19 @@ class Game:
                 #             # if obj.hex_pos == self.player.hex_pos:
                 #             if self.selected_hexagon is None:
                 #                 self.selected_hexagon = obj
-                #                 self.select_player()
-                #             if obj in self.nearby_hexagons:
-                #                 print(321)
-                #                 if self.selected_hexagon.energy > 1 and obj not in self.player_hexagons:
-                #                     # print(self.selected_hexagon)
-                #                     self.selected_hexagon.set_energy(self.selected_hexagon.energy - 1)
-                #                     obj.set_color((0, 0, 255))
-                #                     obj.set_energy(1)
-                #                     print(123)
-                #                     self.selected_hexagon = obj
-                #                     print(self.selected_hexagon)
-                #                     self.player_hexagons.append(obj)
-                #                     break
+                #                 self.get_nearby_hexagons()
+                #             # if obj in self.nearby_hexagons:
+                #             print(321)
+                #             if self.selected_hexagon.energy > 1 and obj not in self.player_hexagons:
+                #                 print(self.selected_hexagon)
+                #                 self.selected_hexagon.set_energy(self.selected_hexagon.energy - 1)
+                #                 obj.set_color((0, 0, 255))
+                #                 obj.set_energy(1)
+                #                 print(123)
+                #                 self.selected_hexagon = obj
+                #                 print(self.selected_hexagon)
+                #                 self.player_hexagons.append(obj)
+                #                 break
                 #         elif obj.hex_pos != self.player.hex_pos and obj not in self.player_hexagons:
                 #             obj.set_color(self.grid_hex_color)
                 #             self.selected_hexagon = None

@@ -48,7 +48,7 @@ class Game:
         self.counter = 1
 
         # game variables
-        self.max_energy = 100
+        self.max_energy = 40
         self.selected_hexagon = None
         self.nearby_pos = []
         self.nearby_hexagons = []
@@ -211,7 +211,6 @@ class Game:
 
     def get_nearby_hexagons(self):
         if self.selected_hexagon is not None:
-            # print(self.selected_hexagon)
             # locate nearby hexagons by pos
             self.nearby_hexagons.clear()
             self.nearby_pos.clear()
@@ -299,22 +298,23 @@ class Game:
         if self.mode == "game":
             # self.app.DISPLAY.fill((0, 0, 0))  # sky color: (0, 157, 255) # grass color: (50, 255, 20)
             self.app.DISPLAY.blit(self.background_image, (0, 0))
-            # print(len(self.player_hexagons))
+
+            # print(len(self.hexagons), len(self.nearby_hexagons), len(self.player_hexagons), len(self.nearby_pos))
 
             for event in events:
-                if event.type == pygame.MOUSEWHEEL:
-                    self.hexagon_size += event.y * 2
-                    if self.hexagon_size > self.max_hexagon_size:
-                        self.hexagon_size = self.max_hexagon_size
-                    elif self.hexagon_size < self.min_hexagon_size:
-                        self.hexagon_size = self.min_hexagon_size
-                    self.hexagon_grid_length = self.hexagon_size * 2
-                    self.grid_map_size = [len(self.grid_map) * (self.hexagon_size + self.hexagon_grid_length), len(self.grid_map[0]) * (self.hexagon_size + self.hexagon_grid_length)]
-
-                    for obj in self.hexagons:
-                        size = [self.hexagon_size, self.hexagon_size]
-                        pos = self.get_pos_for_hex_grid(obj.hex_pos, self.hexagon_size)
-                        obj.zoom(size, pos)
+                # if event.type == pygame.MOUSEWHEEL:
+                #     self.hexagon_size += event.y * 2
+                #     if self.hexagon_size > self.max_hexagon_size:
+                #         self.hexagon_size = self.max_hexagon_size
+                #     elif self.hexagon_size < self.min_hexagon_size:
+                #         self.hexagon_size = self.min_hexagon_size
+                #     self.hexagon_grid_length = self.hexagon_size * 2
+                #     self.grid_map_size = [len(self.grid_map) * (self.hexagon_size + self.hexagon_grid_length), len(self.grid_map[0]) * (self.hexagon_size + self.hexagon_grid_length)]
+                #
+                #     for obj in self.hexagons:
+                #         size = [self.hexagon_size, self.hexagon_size]
+                #         pos = self.get_pos_for_hex_grid(obj.hex_pos, self.hexagon_size)
+                #         obj.zoom(size, pos)
 
                 if event.type == pygame.MOUSEBUTTONDOWN and not self.FIRST_ITERATION:
                     for i, obj in enumerate(self.hexagons):
@@ -334,8 +334,7 @@ class Game:
                                 #                                                             [Hexagon.surface_size[0] / 2,
                                 #                                                              Hexagon.surface_size[0] / 2]))
                                 self.get_nearby_hexagons()
-                            if obj in self.nearby_hexagons and self.selected_hexagon is not None:
-                                print(123)
+                            if obj in self.nearby_hexagons and self.selected_hexagon is not None and self.selected_hexagon.energy > 1:
                                 self.create_hexagon(obj)
                                 self.select_hexagon(obj)
                                 self.get_nearby_hexagons()
@@ -411,9 +410,16 @@ class Game:
                 #     self.selected_hexagon = None
 
             # increase player energy by one every second
-            if self.counter % 120 == 0:
+            if self.counter % 12 == 0:
+                for obj in self.player_hexagons:
+                    # obj.set_energy(obj.energy + 1)
+                    if obj.energy < self.max_energy:
+                        obj.set_energy(obj.energy + 1)
                 if self.player.energy < self.max_energy:
                     self.player.set_energy(self.player.energy + 1)
+
+            if len(self.player_hexagons) == len(self.hexagons) - 1:
+                print("YOU WIN!")
 
             self.counter += 1
             if self.counter > 60:

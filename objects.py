@@ -120,6 +120,13 @@ class Text(Label):
             self.pos_list = [[x, percent * one_percent + i * self.line_height] for i in range(self.lines)]
         return self
 
+    def update_y(self, y, x=None):
+        self.pos[1] = y
+        if x is None:
+            self.pos_list = [[(self.game.app.WIDTH - self.size_list[i][0]) / 2, y + i * self.line_height] for i in range(self.lines)]
+        else:
+            self.pos_list = [[x, y + i * self.line_height] for i in range(self.lines)]
+
     def update(self):
         [self.game.app.DISPLAY.blit(self.surface_list[i], self.pos_list[i]) for i in range(self.lines)]
 

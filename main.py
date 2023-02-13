@@ -1,22 +1,41 @@
+""" Root Wars game. Graphic module: Pygame (SDL). Started developing 31.01.23 """
+
 __author__ = "Egor Mironov"
 
-# started developing 31.01.23
-
+from update import *
 import pygame
 import time
-from update import *
 
 
 class App:
-    def __init__(self):
-        """main initialization"""
+    """ Base app for pygame projects """
+
+    def __init__(self, app_name=None):
+        """ Main initialization """
+
+        def init_display(display_width, display_height, display_mode):
+            """ Display initialization """
+
+            pygame.display.quit()
+            self.WIDTH = display_width
+            self.HEIGHT = display_height
+            self.DISPLAY_MODE = display_mode
+            self.DISPLAY = pygame.display.set_mode((self.WIDTH, self.HEIGHT), self.DISPLAY_MODE)
+            if self.DISPLAY_MODE == pygame.FULLSCREEN:
+                self.WIDTH, self.HEIGHT = pygame.display.get_window_size()
+            self.H_WIDTH = self.WIDTH / 2
+            self.H_HEIGHT = self.HEIGHT / 2
+
         pygame.init()
 
+        if app_name is None:
+            self.NAME = "Base App"
+        else:
+            self.NAME = app_name
         self.INIT_WIDTH = 0
         self.INIT_HEIGHT = 0
         self.INIT_DISPLAY_MODE = pygame.FULLSCREEN
-
-        self.init_display(self.INIT_WIDTH, self.INIT_HEIGHT, self.INIT_DISPLAY_MODE)
+        init_display(self.INIT_WIDTH, self.INIT_HEIGHT, self.INIT_DISPLAY_MODE)
         pygame.display.set_caption("Root Wars")
         self.CLOCK = pygame.time.Clock()
         self.MAX_FPS = 60
@@ -26,20 +45,9 @@ class App:
 
         self.game = Game(self)
 
-    def init_display(self, display_width, display_height, display_mode):
-        """display initialization"""
-        pygame.display.quit()
-        self.WIDTH = display_width
-        self.HEIGHT = display_height
-        self.DISPLAY_MODE = display_mode
-        self.DISPLAY = pygame.display.set_mode((self.WIDTH, self.HEIGHT), self.DISPLAY_MODE)
-        if self.DISPLAY_MODE == pygame.FULLSCREEN:
-            self.WIDTH, self.HEIGHT = pygame.display.get_window_size()
-        self.H_WIDTH = self.WIDTH / 2
-        self.H_HEIGHT = self.HEIGHT / 2
-
     def run(self):
-        """main script loop"""
+        """ Main script loop """
+
         while self.RUN:
             events = pygame.event.get()
             keys = pygame.key.get_pressed()
@@ -61,5 +69,5 @@ class App:
 
 
 if __name__ == "__main__":
-    app = App()
+    app = App("Root Wars")
     app.run()

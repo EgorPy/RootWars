@@ -1,4 +1,7 @@
-""" Root Wars game. Graphic module: Pygame (SDL). Started developing 31.01.23 """
+"""
+Root Wars game. Graphic module: Pygame (SDL). Started developing 31.01.23
+Made on my own game engine called Origin
+"""
 
 __author__ = "Egor Mironov"
 

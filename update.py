@@ -4,6 +4,20 @@ This class is invoked in main.py file
 Update method of this class is called every 0.02 seconds (60 FPS (Depends on what the value of self.MAX_FPS is))
 """
 
+# TODO: CREATE GAME MODES <COMPLETE EXCEPT STEP-GAME>
+#  CLASSIC: CURRENT RULES OF THE GAME
+#  CONTROL: ALL PLAYERS WAIT FOR THE ONE TO MAKE A MOVE
+#  FAST: MAX ENERGY = 20
+
+# TODO: ADD SPECIAL EFFECTS
+# TODO: ADD MUSIC
+# TODO: CREATE MINIMAP
+# TODO: CREATE DIFFERENT MAPS
+# TODO: CREATE GAME MODES (FAST GAME: MAX ENERGY = 20)
+# TODO: CREATE LEVEL EDITOR
+# TODO: CREATE LEVELS
+# TODO: CREATE MULTIPLAYER
+
 import pygame
 from objects import *
 import random
@@ -20,14 +34,16 @@ class Game:
         # app variables
         self.app = app
         self.mode = "main menu"
+        self.version = "1.0.1"
 
         # app lists
         self.main_menu_objects = []
         self.settings_objects = []
         self.info_objects = []
         self.rules_objects = []
+        self.new_game_objects = []
 
-        # game settings variables that you can change
+        # game settings variables that you can change (DEFAULT SETTINGS)
         self.scroll_scale = 40
         self.navigation_speed = 30
         self.max_energy = 40
@@ -44,6 +60,16 @@ class Game:
         self.selected_hexagon_color = (100, 0, 150)
         self.enemy_color = (255, 0, 0)
         self.selected_enemy_hexagon_color = (255, 255, 0)
+        self.nearby_hexagon_color = (0, 255, 0)
+
+        self.difficulties = ["Easy", "Normal", "Hard", "Super Hard"]
+        self.speeds = ["Slow", "Normal", "Fast", "Super Fast"]
+        self.colors = [(255, 0, 0), (255, 255, 0), (0, 255, 0), (0, 255, 255), (0, 0, 255), (100, 0, 150), (150, 255, 0), (255, 255, 255), (255, 0, 255), (0, 255, 150)]
+        self.player_colors = self.colors
+        self.selected_root_colors = self.colors
+        self.nearby_hexagon_colors = self.colors
+        self.game_modes = ["Classic", "Fast"]
+        self.maps = ["Two-Way"]
 
         self.background_image = pygame.transform.scale(pygame.image.load("pexels-pixabay-235985.jpg"), [self.app.WIDTH, self.app.HEIGHT])
 
@@ -70,6 +96,36 @@ class Game:
         self.main_menu_objects.append(self.info_button)
         self.main_menu_objects.append(self.rules_button)
         self.main_menu_objects.append(self.exit_button)
+
+    def create_new_game_objects(self):
+        """ Init new game objects """
+
+        self.new_game_title = Label(self, text="Create New Game").percent_y(10)
+        self.difficulty_options = OptionButton(self, text="Difficulty: ", options=self.difficulties).percent(10, 30)
+        self.speed_options = OptionButton(self, text="Speed: ", options=self.speeds).percent(10, 40)
+        self.player_color_picker = ColorOptionButton(self, text="Player Color: ", options=self.player_colors, current_option=4).percent(10, 50)
+        self.enemy_color_picker = ColorOptionButton(self, text="Enemy Color: ", options=self.player_colors).percent(10, 60)
+        self.selected_hexagon_color_picker = ColorOptionButton(self, text="Selected Root Color: ", options=self.selected_root_colors, current_option=5).percent(10, 70)
+        self.nearby_hexagon_color_picker = ColorOptionButton(self, text="Nearby Root Color: ", options=self.nearby_hexagon_colors, current_option=2).percent(10, 80)
+
+        self.game_mode_options = OptionButton(self, text="Game Mode: ", options=self.game_modes).percent(60, 30)
+        self.map_options = OptionButton(self, text="Map: ", options=self.maps).percent(60, 40)
+
+        self.start_game_button = Button(self, text="Start Game", font_size=80).percent(60, 68)
+
+        self.back_button = Button(self, text="Back").percent(8, 8)
+
+        self.new_game_objects.append(self.new_game_title)
+        self.new_game_objects.append(self.difficulty_options)
+        self.new_game_objects.append(self.speed_options)
+        self.new_game_objects.append(self.player_color_picker)
+        self.new_game_objects.append(self.enemy_color_picker)
+        self.new_game_objects.append(self.selected_hexagon_color_picker)
+        self.new_game_objects.append(self.nearby_hexagon_color_picker)
+        self.new_game_objects.append(self.game_mode_options)
+        self.new_game_objects.append(self.map_options)
+        self.new_game_objects.append(self.start_game_button)
+        self.new_game_objects.append(self.back_button)
 
     def create_settings_objects(self):
         """ Init settings objects """
@@ -127,7 +183,8 @@ class Game:
                                          "Made on 03.02.23.\n\n"
                                          "Written on Python programming language\n\n"
                                          "using module Pygame that uses SDL.\n\n"
-                                         "Made by @ved3v.").percent_y(10)
+                                         "Made by @ved3v.\n\n"
+                                         f"Game version: {self.version}").percent_y(10)
 
         self.back_button = Button(self, text="Back").percent(8, 8)
 
@@ -199,7 +256,7 @@ class Game:
         self.LOSE = False
 
         # game variables that you don't need to change here
-        self.cords = [0, 0]
+        self.cords = [-1385 + self.app.WIDTH / 2 - Hexagon.surface_size[0], -2250 + self.app.HEIGHT / 2 - Hexagon.surface_size[1]]
         self.counter = 1
         self.hexagon_grid_length = self.hexagon_size * 2
         self.selected_hexagon = None
@@ -212,9 +269,47 @@ class Game:
         # game map variables
         self.hexagons = []
         self.lines = []
-        self.grid_map_image = pygame.transform.rotate(pygame.image.load("map.png"), 90)
+        self.grid_map_image = pygame.transform.rotate(pygame.image.load("maps/two-way.png"), 90)
         self.grid_map = [[1 if self.grid_map_image.get_at((x, y)) == (0, 0, 0, 255) else 0 for x in range(self.grid_map_image.get_size()[0])] for y in range(self.grid_map_image.get_size()[1])]
         self.grid_map_size = [len(self.grid_map) * (self.hexagon_size + self.hexagon_grid_length), len(self.grid_map[0]) * (self.hexagon_size + self.hexagon_grid_length)]
+
+        # user specified game options
+        self.difficulty = self.difficulty_options.get_current_option()
+        self.speed = self.speed_options.get_current_option()
+        self.player_color = self.player_color_picker.get_current_option()
+        self.selected_hexagon_color = self.selected_hexagon_color_picker.get_current_option()
+        self.nearby_hexagon_color = self.nearby_hexagon_color_picker.get_current_option()
+        self.enemy_color = self.enemy_color_picker.get_current_option()
+        self.game_mode = self.game_mode_options.get_current_option()
+
+        # changing difficulty
+        if self.difficulty == "Easy":
+            self.player_wait_ticks = 120
+            self.enemy_wait_ticks = 180
+        if self.difficulty == "Normal":
+            self.player_wait_ticks = 120
+            self.enemy_wait_ticks = 120
+        if self.difficulty == "Hard":
+            self.player_wait_ticks = 180
+            self.enemy_wait_ticks = 120
+        if self.difficulty == "Super Hard":
+            self.player_wait_ticks = 240
+            self.enemy_wait_ticks = 120
+
+        # changing speed
+        if self.speed == "Slow":
+            self.player_wait_ticks /= 0.5
+            self.enemy_wait_ticks /= 0.5
+        if self.speed == "Fast":
+            self.player_wait_ticks /= 2
+            self.enemy_wait_ticks /= 2
+        if self.speed == "Super Fast":
+            self.player_wait_ticks /= 4
+            self.enemy_wait_ticks /= 4
+
+        # changing game mode
+        if self.game_mode == "Fast":
+            self.max_energy = 20
 
     def create_game_objects(self):
         """ Init game objects """
@@ -243,7 +338,6 @@ class Game:
 
         for obj in self.hexagons:
             self.create_hex_grid_lines(obj)
-        self.cords = [-1385 + self.app.WIDTH / 2 - Hexagon.surface_size[0], -2250 + self.app.HEIGHT / 2 - Hexagon.surface_size[1]]
 
     def change_mode(self, mode):
         """ Changes mode to a new mode if it is matches one of the possible modes, clearing all variables of all modes except settings """
@@ -254,6 +348,7 @@ class Game:
             self.main_menu_objects.clear()
             self.info_objects.clear()
             self.rules_objects.clear()
+            self.new_game_objects.clear()
 
         if mode == "main menu":
             self.mode = mode
@@ -267,14 +362,27 @@ class Game:
             self.mode = mode
             clear()
             self.create_info_objects()
-        elif mode == "game":
-            self.mode = mode
-            clear()
-            self.create_game_objects()
         elif mode == "rules":
             self.mode = mode
             clear()
             self.create_rules_objects()
+        elif mode == "new game":
+            self.mode = mode
+            clear()
+            self.create_new_game_objects()
+        elif mode == "game":
+            self.mode = mode
+            clear()
+            self.create_game_objects()
+
+    def scroll_info_text(self, event):
+        """ Scrolls self.info_text on mouse wheel event """
+
+        if event.type == pygame.MOUSEWHEEL:
+            if event.y < 0 and self.info_text.pos[1] > -self.info_text.size[1]:
+                self.info_text.update_y(self.info_text.pos[1] + event.y * self.scroll_scale)
+            elif event.y > 0 and self.info_text.pos[1] < self.info_text.size[1] - self.scroll_scale:
+                self.info_text.update_y(self.info_text.pos[1] + event.y * self.scroll_scale)
 
     def select_hexagon(self, obj):
         """ Selects player hexagon """
@@ -342,7 +450,7 @@ class Game:
                 for obj in self.hexagons:
                     if touched(obj.pos[0] + self.cords[0] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, pos2[0], 1,
                                obj.pos[1] + self.cords[1] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, pos2[1], 1) and obj not in self.player_hexagons:
-                        obj.set_color((0, 255, 0))
+                        obj.set_color(self.nearby_hexagon_color)
                         self.nearby_hexagons.append(obj)
 
     def update(self, mouse_buttons, mouse_position, events, keys):
@@ -355,7 +463,7 @@ class Game:
                 obj.update()
 
             if self.play_button.clicked(mouse_buttons, mouse_position):
-                self.change_mode("game")
+                self.change_mode("new game")
             if self.settings_button.clicked(mouse_buttons, mouse_position):
                 self.change_mode("settings")
             if self.info_button.clicked(mouse_buttons, mouse_position):
@@ -393,6 +501,9 @@ class Game:
             for obj in self.info_objects:
                 obj.update()
 
+            for event in events:
+                self.scroll_info_text(event)
+
             if self.back_button.clicked(mouse_buttons, mouse_position):
                 self.change_mode("main menu")
 
@@ -403,11 +514,28 @@ class Game:
                 obj.update()
 
             for event in events:
-                if event.type == pygame.MOUSEWHEEL:
-                    if event.y < 0 and self.info_text.pos[1] > -self.info_text.size[1]:
-                        self.info_text.update_y(self.info_text.pos[1] + event.y * self.scroll_scale)
-                    elif event.y > 0 and self.info_text.pos[1] < self.info_text.size[1] - self.scroll_scale:
-                        self.info_text.update_y(self.info_text.pos[1] + event.y * self.scroll_scale)
+                self.scroll_info_text(event)
+
+            if self.back_button.clicked(mouse_buttons, mouse_position):
+                self.change_mode("main menu")
+
+        if self.mode == "new game":
+            self.app.DISPLAY.blit(self.background_image, (0, 0))
+
+            for obj in self.new_game_objects:
+                obj.update()
+
+            self.difficulty_options.clicked(mouse_buttons, mouse_position)
+            self.speed_options.clicked(mouse_buttons, mouse_position)
+            self.player_color_picker.clicked(mouse_buttons, mouse_position)
+            self.enemy_color_picker.clicked(mouse_buttons, mouse_position)
+            self.selected_hexagon_color_picker.clicked(mouse_buttons, mouse_position)
+            self.nearby_hexagon_color_picker.clicked(mouse_buttons, mouse_position)
+            self.game_mode_options.clicked(mouse_buttons, mouse_position)
+            self.map_options.clicked(mouse_buttons, mouse_position)
+
+            if self.start_game_button.clicked(mouse_buttons, mouse_position):
+                self.change_mode("game")
 
             if self.back_button.clicked(mouse_buttons, mouse_position):
                 self.change_mode("main menu")
@@ -415,7 +543,7 @@ class Game:
         if self.mode == "game":
             self.app.DISPLAY.blit(self.background_image, (0, 0))
 
-            if not self.WIN:
+            if not self.WIN and not self.LOSE:
                 for event in events:
                     if event.type == pygame.MOUSEBUTTONDOWN and not self.FIRST_ITERATION:
                         # set colors
@@ -482,7 +610,7 @@ class Game:
                 obj.update()
 
             if not self.WIN and not self.LOSE:
-                if self.counter % 120 == 0:
+                if self.counter % self.player_wait_ticks == 0:
                     # increasing player energy
                     for obj in self.player_hexagons:
                         if obj.energy < self.max_energy:
@@ -491,7 +619,7 @@ class Game:
                         self.player.set_energy(self.player.energy + 1)
 
                 # bot logic
-                if self.counter % 120 == 0:
+                if self.counter % self.enemy_wait_ticks == 0:
                     self.get_nearby_hexagons_for_enemy()
                     for obj in self.hexagons:
                         if obj in self.nearby_enemy_hexagons and self.selected_enemy_hexagon is not None and self.selected_enemy_hexagon.energy > 1:
@@ -542,7 +670,7 @@ class Game:
                     self.selected_hexagon.set_color(self.enemy_color)
 
             self.counter += 1
-            if self.counter > 60:
+            if self.counter > 2000:
                 self.counter = 0
 
             if self.FIRST_ITERATION and self.counter % 30 == 0:

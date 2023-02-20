@@ -5,7 +5,7 @@ from functions import *
 
 
 class Label:
-    """ Label UI object for pygame games """
+    """ Label UI object for pygame games. """
 
     def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=100, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None):
         self.game = game
@@ -24,9 +24,7 @@ class Label:
         self.background = background
 
         self.font = pygame.font.SysFont(font_name, font_size, bold, italic)
-        self.surface = self.font.render(text, smooth, foreground, background)
-
-        self.size = self.surface.get_size()
+        self.update_text(self.text, self.smooth, self.foreground, self.background)
 
     def update(self):
         """ Shows the surface of label on a game app display """
@@ -44,6 +42,7 @@ class Label:
         if background:
             self.background = background
         self.surface = self.font.render(self.text, self.smooth, self.foreground, self.background)
+        self.size = self.surface.get_size()
 
     def center_x(self, y=0):
         """ Places label at the center of game app screen width """
@@ -94,7 +93,7 @@ class Label:
 
 
 class Button(Label):
-    """ Button UI object for pygame games """
+    """ Button UI object for pygame games. """
 
     def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
@@ -103,7 +102,7 @@ class Button(Label):
         self.counter_max = 50
 
     def clicked(self, mouse_buttons, mouse_position):
-        """ checks if button is clicked or not """
+        """ Checks if button is clicked or not """
 
         x1 = mouse_position[0]
         x2 = self.pos[0]
@@ -118,6 +117,92 @@ class Button(Label):
             return True
         else:
             return False
+
+
+class OptionButton(Button):
+    """
+    OptionButton UI object for pygame games.
+    When clicked, switches current option to next option.
+    """
+
+    def __init__(self, game, text="", options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None, current_option=0):
+        if options is None:
+            self.options = ["Option 1", "Option 2", "Option 3"]
+        else:
+            self.options = options
+        self.current_option = current_option
+        self.static_text = text
+        self.text = self.static_text + str(self.options[self.current_option])
+        super().__init__(game, self.text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
+        self.counter_max = 20
+
+    def clicked(self, mouse_buttons, mouse_position):
+        """ Checks if option button is clicked or not """
+
+        x1 = mouse_position[0]
+        x2 = self.pos[0]
+        w2 = self.size[0]
+        y1 = mouse_position[1]
+        y2 = self.pos[1]
+        h2 = self.size[1]
+        if self.counter > 0:
+            self.counter -= 1
+        if mouse_buttons[0] and touched(x1, 1, x2, w2, y1, 1, y2, h2) and self.counter <= 0:
+            self.counter = self.counter_max
+            self.next_option()
+
+    def next_option(self):
+        """ Selects next option to display on option button """
+
+        self.current_option += 1
+        if self.current_option > len(self.options) - 1:
+            self.current_option = 0
+        self.text = self.static_text + str(self.options[self.current_option])
+        self.update_text(self.text, self.smooth, self.foreground, self.background)
+
+    def get_current_option(self):
+        """ Returns current option value """
+
+        return self.options[self.current_option]
+
+
+class ColorOptionButton(OptionButton):
+    """
+    ColorOptionButton UI object for pygame games.
+    When clicked, switches current option to next option.
+    Option represents RGB color. Option example: (255, 0, 0).
+    """
+
+    def __init__(self, game, text="", color_rect_size=None, options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True,
+                 foreground=(40, 40, 40), background=None, current_option=0, outline=5):
+        super().__init__(game, text, options, pos, font_name, font_size, bold, italic, smooth, foreground, background, current_option)
+        self.text = self.static_text
+        self.outline = outline
+        self.update_text(self.text, self.smooth, self.foreground, self.background)
+        if options is None:
+            self.options = [(255, 0, 0), (0, 255, 0), (0, 0, 255)]
+        else:
+            self.options = options
+        if color_rect_size is None:
+            self.color_rect_size = [self.font_size * 2, self.font_size + 10]
+        else:
+            self.color_rect_size = color_rect_size
+
+    def update(self):
+        """ Shows the surface of label on a game app display and the rectangle with picked color option """
+
+        pygame.draw.rect(self.game.app.DISPLAY, self.options[self.current_option], pygame.Rect([self.pos[0] + self.size[0], self.pos[1]], self.color_rect_size))
+        pygame.draw.rect(self.game.app.DISPLAY, self.foreground, pygame.Rect([self.pos[0] + self.size[0], self.pos[1]], self.color_rect_size), self.outline)
+        self.game.app.DISPLAY.blit(self.surface, self.pos)
+
+    def next_option(self):
+        """ Selects next option to display on color option button """
+
+        self.current_option += 1
+        if self.current_option > len(self.options) - 1:
+            self.current_option = 0
+        self.text = self.static_text
+        self.update_text(self.text, self.smooth, self.foreground, self.background)
 
 
 class Text(Label):
@@ -169,8 +254,8 @@ class Text(Label):
 
 class Hexagon(Label):
     """
-    Hexagon game object
-    Main game object for the Root Wars
+    Hexagon game object.
+    Main game object for the Root Wars.
     """
 
     surface_size = [300, 300]
@@ -179,7 +264,6 @@ class Hexagon(Label):
     def __init__(self, game, pos=None, color=(255, 255, 255), outline_color=(10, 10, 10), width=5, hexagon_size=None, hex_pos=None, energy=0,
                  text="", font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None, i=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
-        self.game = game
 
         if hex_pos is None:
             self.hex_pos = []
@@ -278,7 +362,7 @@ class Hexagon(Label):
 
 
 class Line:
-    """ Line class for the Root Wars grid map """
+    """ Line class for the Root Wars grid map. """
 
     def __init__(self, game, pos1=None, pos2=None, color=(255, 255, 255), width=5):
         self.game = game

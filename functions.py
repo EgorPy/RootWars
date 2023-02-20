@@ -1,9 +1,9 @@
-""" useful math functions """
+""" Useful math functions """
 
 import math
 
 
-def touched_up(y1, height1, y2):  # height2
+def touched_up(y1: int, height1: int, y2: int) -> bool:  # height2
     """ Checks if one object is touching up of other object """
 
     # if y1 < (y2 - height2) < (y1 + height1):
@@ -11,7 +11,7 @@ def touched_up(y1, height1, y2):  # height2
         return True
 
 
-def touched_down(y1, height1, y2, height2):
+def touched_down(y1: int, height1: int, y2: int, height2: int) -> bool:
     """ Checks if one object is touching down of other object """
 
     # if y2 < (y1 + height1) < (y2 + height2):
@@ -19,14 +19,14 @@ def touched_down(y1, height1, y2, height2):
         return True
 
 
-def touched_left(x1, width1, x2, width2):
+def touched_left(x1: int, width1: int, x2: int, width2: int) -> bool:
     """ Checks if one object is touching left of other object """
 
     if x2 < (x1 - width1) < (x2 + width2):
         return True
 
 
-def touched_right(x1, width1, x2, width2):
+def touched_right(x1: int, width1: int, x2: int, width2: int) -> bool:
     """ Checks if one object is touching right of other object """
 
     if x2 < (x1 + width1) < (x2 + width2):
@@ -42,25 +42,25 @@ def touched(x1: int, weight1: int, x2: int, weight2: int, y1: int, height1: int,
         return False
 
 
-def deg_to_rad(degree):
+def deg_to_rad(degree: float) -> float:
     """ Converts degrees to radians """
 
     return degree * math.pi / 180
 
 
-def rad_to_deg(radian):
+def rad_to_deg(radian: float) -> float:
     """ Converts radians to degrees """
 
     return radian * 180 / math.pi
 
 
-def rgb_to_hex(r=0, g=0, b=0):
+def rgb_to_hex(r=0, g=0, b=0) -> str:
     """ Converts rgb value to hex value """
 
     return "#" + str(hex(r))[2:].rjust(2, "0").upper() + str(hex(g))[2:].rjust(2, "0").upper() + str(hex(b))[2:].rjust(2, "0").upper()
 
 
-def distance_to_obj(pos1=None, pos2=None):
+def distance_to_obj(pos1=None, pos2=None) -> float:
     """ Gets distance between two positions using Pythagorean theorem """
 
     if pos1 is None:
@@ -74,7 +74,7 @@ def distance_to_obj(pos1=None, pos2=None):
     return distance
 
 
-def rotate_to_cord(pos1=None, pos2=None):
+def rotate_to_cord(pos1=None, pos2=None) -> float or None:
     """
     :param pos1: pos of the object that must be turned
     :param pos2: pos of the object to turn to

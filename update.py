@@ -34,7 +34,7 @@ class Game:
         # app variables
         self.app = app
         self.mode = "main menu"
-        self.version = "1.0.1"
+        self.version = "1.1"
 
         # app lists
         self.main_menu_objects = []

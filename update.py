@@ -13,9 +13,9 @@ Update method of this class is called every 0.02 seconds (60 FPS (Depends on wha
 # TODO: ADD MUSIC
 # TODO: CREATE MINIMAP
 # TODO: CREATE DIFFERENT MAPS
-# TODO: CREATE GAME MODES (FAST GAME: MAX ENERGY = 20)
 # TODO: CREATE LEVEL EDITOR
 # TODO: CREATE LEVELS
+# TODO: USE DAMN GPU
 # TODO: CREATE MULTIPLAYER
 
 import pygame
@@ -53,9 +53,9 @@ class Game:
         self.map_move_reaction = 2
         self.grid_line_width = 5
         self.grid_hex_width = 5
-        self.grid_line_color = (50, 50, 50, 255)
+        self.grid_line_color = (200, 200, 200, 255)
         self.grid_hex_color = (20, 20, 20)
-        self.grid_hex_outline_color = (50, 50, 50, 255)
+        self.grid_hex_outline_color = (200, 200, 200, 255)
         self.player_color = (0, 0, 255)
         self.selected_hexagon_color = (100, 0, 150)
         self.enemy_color = (255, 0, 0)
@@ -71,7 +71,7 @@ class Game:
         self.game_modes = ["Classic", "Fast"]
         self.maps = ["Two-Way"]
 
-        self.background_image = pygame.transform.scale(pygame.image.load("pexels-pixabay-235985.jpg"), [self.app.WIDTH, self.app.HEIGHT])
+        self.background_image = pygame.transform.scale(pygame.image.load("background.jpg"), [self.app.WIDTH, self.app.HEIGHT])
 
         # settings variables
         self.SETTINGS_OBJECTS_CREATED = False
@@ -79,6 +79,17 @@ class Game:
         self.fps_label = Label(self, foreground=(0, 255, 0), font_size=40, font_name="Courier").percent(95, 2)
 
         self.create_main_menu_objects()
+
+        # test
+        # self.bloom_objects = []
+        # self.mode = "bloom"
+        # self.bloom_test()
+        # self.counter = 0
+
+    # def bloom_test(self):
+    #     """ Bloom test function """
+    #
+    #     self.bloom_objects.append(Bloom3(self, [self.app.H_WIDTH, self.app.H_HEIGHT], colorkey=(0, 0, 0)))
 
     def create_main_menu_objects(self):
         """ Init main menu objects """
@@ -218,8 +229,7 @@ class Game:
                           hex_pos=[x, y],
                           color=color,
                           outline_color=outline_color,
-                          foreground=(100, 100, 100),
-                          i=len(self.hexagons))
+                          foreground=(100, 100, 100))
         if pos is not None:
             if y % 2 == 0:
                 if x % 3 == 0:
@@ -245,7 +255,7 @@ class Game:
                         round(pos1[1] + math.cos(deg_to_rad((j * 60 + 120))) * self.hexagon_grid_length)]
                 if touched(obj.pos[0] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, pos2[0], 1,
                            obj.pos[1] + Hexagon.surface_size[0] / 2, Hexagon.surface_size[0] / 2, pos2[1], 1):
-                    self.lines.append(Line(self, pos1, pos2, color=self.grid_hex_outline_color))
+                    self.lines.append(Line(self, pos1, pos2, color=self.grid_line_color))
 
     def new_game(self):
         """ game variables that you need to reset to make a new game """
@@ -316,8 +326,8 @@ class Game:
 
         self.new_game()
 
-        self.win_label = Label(self, text="You win!", foreground=(50, 50, 50)).center()
-        self.lose_label = Label(self, text="You lose!", foreground=(50, 50, 50)).center()
+        self.win_label = Label(self, text="You win!").center()
+        self.lose_label = Label(self, text="You lose!").center()
         self.back_button = Button(self, text="Menu").percent(8, 8)
 
         self.create_hex_grid()
@@ -456,6 +466,41 @@ class Game:
     def update(self, mouse_buttons, mouse_position, events, keys):
         """ Main game logic """
 
+        # if self.mode == "bloom":
+        #     # test
+        #
+        #     # self.app.DISPLAY.fill((0, 0, 0))
+        #
+        #     for obj in self.bloom_objects:
+        #         obj.update()
+        #         if mouse_buttons[0]:
+        #             if obj.last_pos == [-100, -100]:
+        #                 obj.last_pos = mouse_position
+        #             obj.pos = mouse_position
+        #         else:
+        #             obj.pos = [-100, -100]
+        #             obj.last_pos = [-100, -100]
+        #
+        #     self.counter += 1
+        #     if self.counter > 100:
+        #         self.alpha = 0
+        #         self.counter = 0
+        #
+        #     # for event in events:
+        #     #     if event.type == pygame.MOUSEBUTTONDOWN and event.button == pygame.BUTTON_LEFT:
+        #     #         for obj in self.bloom_objects:
+        #     #             obj.pos = Pos.sub_pos(mouse_position, [Bloom.surface_size // 2, Bloom.surface_size // 2])
+        #     #             obj.reset()
+        #
+        #     # self.counter += 1
+        #     # if self.counter > 8:
+        #     #     self.counter = 0
+        #     #     self.bloom_objects[0].alpha += 1
+        #     #     # self.bloom_objects[0].set_size(self.bloom_objects[0].s + 4)
+        #     #     if self.bloom_objects[0].alpha > 255:
+        #     #         self.bloom_objects[0].alpha = 0
+        #     #     print(self.bloom_objects[0].alpha)
+
         if self.mode == "main menu":
             self.app.DISPLAY.blit(self.background_image, (0, 0))
 
@@ -542,6 +587,7 @@ class Game:
 
         if self.mode == "game":
             self.app.DISPLAY.blit(self.background_image, (0, 0))
+            # self.app.DISPLAY.fill((0, 0, 0))
 
             if not self.WIN and not self.LOSE:
                 for event in events:

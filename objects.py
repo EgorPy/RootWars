@@ -1,19 +1,153 @@
-""" This file contains all game objects classes """
+"""
+Origin Game Engine Library.
+This file contains all game objects classes .
+"""
 
 import pygame.draw
 from functions import *
 
 
-class Label:
-    """ Label UI object for pygame games. """
+def rotate(image, pos, origin_pos, angle):
+    """ Rotate pygame surface to given angle with stable origin position """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=100, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None):
-        self.game = game
+    # calculate the axis aligned bounding box of the rotated image
+    w, h = image.get_size()
+    box = [pygame.math.Vector2(p) for p in [(0, 0), (w, 0), (w, -h), (0, -h)]]
+    box_rotate = [p.rotate(angle) for p in box]
+    min_box = (min(box_rotate, key=lambda p: p[0])[0], min(box_rotate, key=lambda p: p[1])[1])
+    max_box = (max(box_rotate, key=lambda p: p[0])[0], max(box_rotate, key=lambda p: p[1])[1])
 
+    # calculate the translation of the pivot
+    pivot = pygame.math.Vector2(origin_pos[0], -origin_pos[1])
+    pivot_rotate = pivot.rotate(angle)
+    pivot_move = pivot_rotate - pivot
+
+    # calculate the upper left origin of the rotated image
+    origin = (pos[0] - origin_pos[0] + min_box[0] - pivot_move[0], pos[1] - origin_pos[1] - max_box[1] + pivot_move[1])
+
+    # get a rotated image
+    rotated_image = pygame.transform.rotate(image, angle)
+
+    return rotated_image, [origin[0] + 25, origin[1] + 25]
+
+
+class Pos:
+    """ Basic class for interpreting something that has position """
+
+    def __init__(self, pos=None):
         if pos is None:
             self.pos = [0, 0]
         else:
             self.pos = pos
+
+    @staticmethod
+    def add_pos(pos1: list, pos2: list) -> list:
+        """ Adds coordinates """
+
+        return [pos1[0] + pos2[0], pos1[1] + pos2[1]]
+
+    @staticmethod
+    def sub_pos(pos1: list, pos2: list) -> list:
+        """ Subtracts coordinates """
+
+        return [pos1[0] - pos2[0], pos1[1] - pos2[1]]
+
+    @staticmethod
+    def inv_sub_pos(pos1: list, pos2: list) -> list:
+        """ Subtracts and inverts coordinates """
+
+        return [pos2[0] - pos1[0], pos2[1] - pos1[1]]
+
+    @staticmethod
+    def mul_pos(pos1: list, pos2: list) -> list:
+        """ Multiplies coordinates """
+
+        return [pos1[0] * pos2[0], pos1[1] * pos2[1]]
+
+    @staticmethod
+    def div_pos(pos1: list, pos2: list) -> list:
+        """ Divides coordinates """
+
+        return [pos1[0] / pos2[0], pos1[1] / pos2[1]]
+
+    @staticmethod
+    def inv_div_pos(pos1: list, pos2: list) -> list:
+        """ Divides and inverts coordinates"""
+
+        return [pos2[0] / pos1[0], pos2[1] / pos1[1]]
+
+
+class Vector(Pos):
+    """ Class that represents vectors """
+
+    def __init__(self, pos1=None, pos2=None):
+        super().__init__()
+        if pos1 is None:
+            self.pos1 = [0, 0]
+        else:
+            self.pos1 = pos1
+        if pos2 is None:
+            self.pos2 = [0, 0]
+        else:
+            self.pos2 = pos2
+        self.length = self.get_length()
+        self.angle = self.get_angle()
+
+    def get_length(self):
+        """ Returns length of a vector """
+
+        return distance_to_obj(self.pos1, self.pos2)
+
+    def get_angle(self):
+        """
+        Returns vector angle.
+
+        y: vertical size of a vector.
+
+        l: length of a vector.
+        """
+
+        y = self.sub_pos(self.pos2, self.pos1)[1]
+        l = self.get_length()
+        return rad_to_deg(math.sin(y / l))
+
+
+class Surface(Pos):
+    """ Surface class that allows you to set alpha value, colorkey and other cool things to show on pygame window"""
+
+    def __init__(self, game, pos=None, size=None, alpha=255, colorkey=None):
+        self.game = game
+
+        super().__init__(pos)
+        if size is None:
+            self.size = [200, 100]
+        else:
+            self.size = size
+        self.alpha = alpha
+        self.colorkey = colorkey
+
+        self.create_surface()
+
+    def create_surface(self):
+        """ Creates pygame surface """
+
+        self.surface = pygame.Surface(self.size)
+        self.surface.set_alpha(self.alpha)
+        self.surface.set_colorkey(self.colorkey)
+
+    def update(self):
+        """ Shows the surface on a game app display """
+
+        self.game.app.DISPLAY.blit(self.surface, self.pos)
+
+
+class Label(Pos):
+    """ Label UI object for pygame games. """
+
+    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=100, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None):
+        self.game = game
+
+        super().__init__(pos)
         self.text = text
         self.font_name = font_name
         self.font_size = font_size
@@ -95,7 +229,7 @@ class Label:
 class Button(Label):
     """ Button UI object for pygame games. """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None):
+    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
         self.counter = 0
@@ -125,7 +259,8 @@ class OptionButton(Button):
     When clicked, switches current option to next option.
     """
 
-    def __init__(self, game, text="", options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None, current_option=0):
+    def __init__(self, game, text="", options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None,
+                 current_option=0):
         if options is None:
             self.options = ["Option 1", "Option 2", "Option 3"]
         else:
@@ -174,7 +309,7 @@ class ColorOptionButton(OptionButton):
     """
 
     def __init__(self, game, text="", color_rect_size=None, options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True,
-                 foreground=(40, 40, 40), background=None, current_option=0, outline=5):
+                 foreground=(200, 200, 200), background=None, current_option=0, outline=1):
         super().__init__(game, text, options, pos, font_name, font_size, bold, italic, smooth, foreground, background, current_option)
         self.text = self.static_text
         self.outline = outline
@@ -211,7 +346,7 @@ class Text(Label):
     This widget allows you to create multiple lines text.
     """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None, line_height=None):
+    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None, line_height=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
         if line_height is None:
@@ -259,10 +394,10 @@ class Hexagon(Label):
     """
 
     surface_size = [300, 300]
-    height_scale = 1
+    height_scale = 3
 
     def __init__(self, game, pos=None, color=(255, 255, 255), outline_color=(10, 10, 10), width=5, hexagon_size=None, hex_pos=None, energy=0,
-                 text="", font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None, i=None):
+                 text="", font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
         if hex_pos is None:
@@ -277,7 +412,6 @@ class Hexagon(Label):
         else:
             self.hexagon_size = [hexagon_size[0] // 2, hexagon_size[1] // 2]
         self.text_surface = self.font.render(self.text, self.smooth, self.foreground, self.background)
-        self.i = i
 
         # game variables
         self.energy = energy
@@ -302,15 +436,15 @@ class Hexagon(Label):
             i[0] = self.surface_size[0] - i[0] - self.width
             i[1] = self.surface_size[1] - i[1]
         if self.energy > 0:
-            pygame.draw.lines(self.surface, self.outline_color, False, self.pos_list, self.width)
+            pygame.draw.lines(self.surface, self.outline_color, True, self.pos_list, self.width)
             for i in range(int(self.energy)):
                 energy_pos_list = []
                 for j in self.pos_list:
                     pos = [j[0] - i * self.height_scale, j[1] - i * self.height_scale]
                     energy_pos_list.append(pos)
-                color = [self.color[0] - i * self.height_scale if self.color[0] != 0 else self.color[0],
-                         self.color[1] - i * self.height_scale if self.color[1] != 0 else self.color[1],
-                         self.color[2] - i * self.height_scale if self.color[2] != 0 else self.color[2]]
+                color = [self.color[0] - i * self.height_scale * 2 if self.color[0] != 0 else self.color[0],
+                         self.color[1] - i * self.height_scale * 2 if self.color[1] != 0 else self.color[1],
+                         self.color[2] - i * self.height_scale * 2 if self.color[2] != 0 else self.color[2]]
                 color[0] = 0 if color[0] < 0 else color[0]
                 color[1] = 0 if color[1] < 0 else color[1]
                 color[2] = 0 if color[2] < 0 else color[2]
@@ -320,7 +454,7 @@ class Hexagon(Label):
 
                 pygame.draw.polygon(self.surface, color, energy_pos_list)
                 if i % 5 == 0:
-                    pygame.draw.lines(self.surface, self.outline_color, True, energy_pos_list, self.width)
+                    pygame.draw.lines(self.surface, self.color, True, energy_pos_list, self.width)
         else:
             pygame.draw.polygon(self.surface, self.color, self.pos_list)
             pygame.draw.lines(self.surface, self.outline_color, True, self.pos_list, self.width)
@@ -361,20 +495,13 @@ class Hexagon(Label):
         self.draw_hexagon()
 
 
-class Line:
+class Line(Vector):
     """ Line class for the Root Wars grid map. """
 
     def __init__(self, game, pos1=None, pos2=None, color=(255, 255, 255), width=5):
         self.game = game
 
-        if pos1 is None:
-            self.pos1 = [0, 0]
-        else:
-            self.pos1 = pos1
-        if pos2 is None:
-            self.pos2 = [0, 0]
-        else:
-            self.pos2 = pos2
+        super().__init__(pos1, pos2)
         self.color = color
         self.width = width
 
@@ -385,3 +512,166 @@ class Line:
                          [self.pos1[0] + self.game.cords[0], self.pos1[1] + self.game.cords[1]],
                          [self.pos2[0] + self.game.cords[0], self.pos2[1] + self.game.cords[1]],
                          self.width)
+
+
+class AnimatedRing(Surface):
+    """
+    Was the first test version of bloom effect.
+    Now it's a simple test object that uses smooth animation.
+    """
+
+    surface_size = 300
+
+    def __init__(self, game, pos=None, size=100, color=(0, 155, 255), alpha=255, colorkey=None, angle=0, width=4):
+        Surface.__init__(self, game, pos, [self.surface_size, self.surface_size], alpha, colorkey)
+        self.angle = angle
+        self.color = color
+        self.size = size
+        self.width = width
+        self.counter = 0
+
+        self.acceleration = 20
+        self.init_size = 10
+        self.max_size = self.size
+
+        self.init_max_size = size
+        self.init_color = color
+
+        # self.surface.fill((255, 0, 0))
+        self.draw_ring()
+
+    def draw_ring(self):
+        """ Draws ring on its surface """
+
+        self.surface.fill(self.colorkey)
+        pygame.draw.circle(self.surface, sub_brightness(self.color, 100), [self.surface_size // 2, self.surface_size // 2], self.size // 2 + self.width // 2, self.width * 2)
+        pygame.draw.circle(self.surface, self.color, [self.surface_size // 2, self.surface_size // 2], self.size // 2, self.width)
+
+    def draw_circle(self):
+        """ Draws circle on its surface """
+
+        self.surface.fill(self.colorkey)
+        pygame.draw.circle(self.surface, sub_brightness(self.color, 100), [self.surface_size // 2, self.surface_size // 2], self.size // 2 + self.width * 2)
+        pygame.draw.circle(self.surface, self.color, [self.surface_size // 2, self.surface_size // 2], self.size // 2)
+
+    def set_alpha(self, alpha: int):
+        """ Sets alpha value of the surface """
+
+        self.alpha = alpha
+        self.surface.set_alpha(self.alpha)
+
+    def set_size(self, size):
+        """ Sets the size value of the surface """
+
+        self.size = size
+        self.draw_ring()
+
+    def update(self):
+        """ Shows the surface on a game app display """
+
+        self.game.app.DISPLAY.blit(self.surface, self.pos)
+
+        if self.color[2] < 230:
+            self.color = add_brightness(self.color, 8)
+        self.draw_ring()
+
+        self.size = (self.counter / (self.counter / 1.1 + 1)) * (self.max_size - self.init_size) + self.init_size
+        if self.size > self.max_size:
+            self.size = self.max_size
+        # self.width = 15 - int(self.size / 10)
+        # self.set_alpha(self.size)
+        self.set_size(self.size)
+
+        if self.counter < 255:
+            self.counter += 1
+
+    def reset(self):
+        """ Resets animation properties """
+
+        self.counter = 0
+        self.size = self.init_max_size
+        self.max_size = self.size
+        self.color = self.init_color
+
+
+class Bloom2(Surface):
+    """
+    Bloom effects like post-processing.
+    Can be implemented in any visual object.
+    """
+
+    def __init__(self, game, pos=None, r=50, light_source_r=5, resolution=20, color=(255, 255, 255), alpha=5, colorkey=(0, 0, 0), angle=0):
+        Surface.__init__(self, game, pos, [r, r], alpha, colorkey)
+        self.angle = angle
+        self.color = color
+        self.r = r
+        self.light_source_r = light_source_r
+        self.resolution = resolution
+        self.size = [r, r]
+        self.intensity = 1
+        self.scale = self.r // self.resolution
+
+        self.draw(0)
+
+    def draw(self, r):
+        """ Draws bloom light on self surface """
+
+        self.surface.fill(self.colorkey)
+        self.surface.set_alpha(self.alpha)
+        pygame.draw.circle(self.surface, self.color, [self.r // 2, self.r // 2], self.r // 2 - r)
+
+    def update(self):
+        """ Shows the surface on a game app display """
+
+        # draw light
+        for i in range(self.r // self.scale):
+            # self.rotated_surface, self.rotated_pos = rotate(self.surface, self.pos, [self.s // 2, self.s // 2], i * self.steps)
+            self.draw(self.r - i * self.scale)
+            self.game.app.DISPLAY.blit(self.surface, self.pos)
+
+        # draw light source
+        pygame.draw.circle(self.game.app.DISPLAY, add_brightness(self.color, 100), self.add_pos(self.pos, [self.r // 2, self.r // 2]), self.light_source_r)
+
+
+class Bloom3(Surface):
+    """
+    Bloom effects like post-processing.
+    Can be implemented in any visual object.
+    Allows to create glowy lines.
+    """
+
+    def __init__(self, game, pos=None, r=50, light_source_r=2, resolution=20, color=(255, 255, 255), alpha=3, colorkey=(0, 0, 0), angle=0):
+        Surface.__init__(self, game, pos, [r, r], alpha, colorkey)
+        self.angle = angle
+        self.color = color
+        self.r = r
+        self.light_source_r = light_source_r
+        self.resolution = resolution
+        self.size = [r, r]
+        self.intensity = 1
+        self.scale = self.r // self.resolution
+        self.last_pos = self.pos
+
+        self.draw(0)
+
+    def draw(self, r):
+        """ Draws bloom light on self surface """
+
+        self.surface.fill(self.colorkey)
+        self.surface.set_alpha(self.alpha)
+        pygame.draw.circle(self.surface, self.color, [self.r // 2, self.r // 2], self.r // 2 - r)
+
+    def update(self):
+        """ Shows the surface on a game app display """
+
+        # draw light
+        for i in range(self.r // self.scale):
+            # self.rotated_surface, self.rotated_pos = rotate(self.surface, self.pos, [self.s // 2, self.s // 2], i * self.steps)
+            self.draw(self.r - i * self.scale)
+            self.game.app.DISPLAY.blit(self.surface, self.sub_pos(self.pos, [self.r // 2, self.r // 2]))
+
+        # draw light source
+        pygame.draw.line(self.game.app.DISPLAY, add_brightness(self.color, 100), self.last_pos, self.pos,
+                         self.light_source_r * 2)
+
+        self.last_pos = self.pos

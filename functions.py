@@ -97,3 +97,41 @@ def rotate_to_cord(pos1=None, pos2=None) -> float or None:
             return angle
     except ZeroDivisionError:
         return None
+
+
+def add_brightness(color: list, value: int) -> list:
+    """ Adds brightness to given color """
+
+    r, g, b = color
+    r += value
+    g += value
+    b += value
+    if r > 255:
+        err = r - 255
+        g += err // 2
+        b += err // 2
+    if g > 255:
+        err = g - 255
+        r += err // 2
+        b += err // 2
+    if b > 255:
+        err = b - 255
+        g += err // 2
+        r += err // 2
+    r = 255 if r > 255 else r
+    g = 255 if g > 255 else g
+    b = 255 if b > 255 else b
+    return [r, g, b]
+
+
+def sub_brightness(color: list, value: int) -> list:
+    """ Subtracts brightness to given color """
+
+    r, g, b = color
+    r -= value
+    g -= value
+    b -= value
+    r = 0 if r < 0 else r
+    g = 0 if g < 0 else g
+    b = 0 if b < 0 else b
+    return [r, g, b]

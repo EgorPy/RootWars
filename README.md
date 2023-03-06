@@ -1,2 +1,2 @@
 # RootWars
-Strategy game for game jam with theme "roots" organized by IT Step
+Strategy game for game jam with theme "roots"

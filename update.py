@@ -186,8 +186,7 @@ class Game:
                                          "you can click on available positions\n"
                                          "where root can grow to grow your root.\n\n"
                                          "If root that you clicked has more energy than enemy root,\n"
-                                         "you can grow your root on enemy root, enemy root will be destroyed.").percent_y(
-            0)
+                                         "you can grow your root on enemy root, enemy root will be destroyed.").percent_y(0)
 
         self.back_button = Button(self, text="Back").percent(8, 8)
 

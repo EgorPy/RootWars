@@ -115,7 +115,7 @@ class Game:
 
         self.new_game_title = Label(self, text="Create New Game").percent_y(10)
         self.difficulty_options = OptionButton(self, text="Difficulty: ", options=self.difficulties).percent(10, 30)
-        self.speed_options = OptionButton(self, text="Speed: ", options=self.speeds).percent(10, 40)
+        self.speed_options = OptionButton(self, text="Speed: ", options=self.speeds, current_option=1).percent(10, 40)
         self.player_color_picker = ColorOptionButton(self, text="Player Color: ", options=self.player_colors,
                                                      current_option=4).percent(10, 50)
         self.enemy_color_picker = ColorOptionButton(self, text="Enemy Color: ", options=self.player_colors).percent(10,

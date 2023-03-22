@@ -143,7 +143,7 @@ class Surface(Pos):
 class Label(Pos):
     """ Label UI object for pygame games. """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=100, bold=False, italic=False,
+    def __init__(self, game, text="", pos=None, font_name="Segoe UI", font_size=100, bold=False, italic=False,
                  smooth=True, foreground=(200, 200, 200), background=None):
         self.game = game
 
@@ -229,7 +229,7 @@ class Label(Pos):
 class Button(Label):
     """ Button UI object for pygame games. """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False,
+    def __init__(self, game, text="", pos=None, font_name="Segoe UI", font_size=60, bold=False, italic=False,
                  smooth=True, foreground=(200, 200, 200), background=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
@@ -260,7 +260,7 @@ class OptionButton(Button):
     When clicked, switches current option to next option.
     """
 
-    def __init__(self, game, text="", options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False,
+    def __init__(self, game, text="", options=None, pos=None, font_name="Segoe UI", font_size=60, bold=False,
                  italic=False, smooth=True, foreground=(200, 200, 200), background=None,
                  current_option=0):
         if options is None:
@@ -310,7 +310,7 @@ class ColorOptionButton(OptionButton):
     Option represents RGB color. Option example: (255, 0, 0).
     """
 
-    def __init__(self, game, text="", color_rect_size=None, options=None, pos=None, font_name="Gill Sans", font_size=60,
+    def __init__(self, game, text="", color_rect_size=None, options=None, pos=None, font_name="Segoe UI", font_size=60,
                  bold=False, italic=False, smooth=True,
                  foreground=(200, 200, 200), background=None, current_option=0, outline=1):
         super().__init__(game, text, options, pos, font_name, font_size, bold, italic, smooth, foreground, background,
@@ -352,7 +352,7 @@ class Text(Label):
     This widget allows you to create multiple lines text.
     """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False,
+    def __init__(self, game, text="", pos=None, font_name="Segoe UI", font_size=60, bold=False, italic=False,
                  smooth=True, foreground=(200, 200, 200), background=None, line_height=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
@@ -409,7 +409,7 @@ class Hexagon(Label):
 
     def __init__(self, game, pos=None, color=(255, 255, 255), outline_color=(10, 10, 10), width=5, hexagon_size=None,
                  hex_pos=None, energy=0,
-                 text="", font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True,
+                 text="", font_name="Segoe UI", font_size=60, bold=False, italic=False, smooth=True,
                  foreground=(40, 40, 40), background=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 

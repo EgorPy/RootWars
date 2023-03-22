@@ -36,7 +36,7 @@ class App:
         self.INIT_HEIGHT = 0
         self.INIT_DISPLAY_MODE = pygame.FULLSCREEN
         init_display(self.INIT_WIDTH, self.INIT_HEIGHT, self.INIT_DISPLAY_MODE)
-        pygame.display.set_caption("Root Wars")
+        pygame.display.set_caption(self.NAME)
         self.CLOCK = pygame.time.Clock()
         self.MAX_FPS = 60
         self.delta_time = 0.01

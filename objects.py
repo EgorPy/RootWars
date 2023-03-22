@@ -103,13 +103,12 @@ class Vector(Pos):
         Returns vector angle.
 
         y: vertical size of a vector.
-
         l: length of a vector.
         """
 
         y = self.sub_pos(self.pos2, self.pos1)[1]
-        l = self.get_length()
-        return rad_to_deg(math.sin(y / l))
+        length = self.get_length()
+        return rad_to_deg(math.sin(y / length))
 
 
 class Surface(Pos):
@@ -144,7 +143,8 @@ class Surface(Pos):
 class Label(Pos):
     """ Label UI object for pygame games. """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=100, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None):
+    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=100, bold=False, italic=False,
+                 smooth=True, foreground=(200, 200, 200), background=None):
         self.game = game
 
         super().__init__(pos)
@@ -229,7 +229,8 @@ class Label(Pos):
 class Button(Label):
     """ Button UI object for pygame games. """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None):
+    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False,
+                 smooth=True, foreground=(200, 200, 200), background=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
         self.counter = 0
@@ -259,7 +260,8 @@ class OptionButton(Button):
     When clicked, switches current option to next option.
     """
 
-    def __init__(self, game, text="", options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None,
+    def __init__(self, game, text="", options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False,
+                 italic=False, smooth=True, foreground=(200, 200, 200), background=None,
                  current_option=0):
         if options is None:
             self.options = ["Option 1", "Option 2", "Option 3"]
@@ -308,9 +310,11 @@ class ColorOptionButton(OptionButton):
     Option represents RGB color. Option example: (255, 0, 0).
     """
 
-    def __init__(self, game, text="", color_rect_size=None, options=None, pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True,
+    def __init__(self, game, text="", color_rect_size=None, options=None, pos=None, font_name="Gill Sans", font_size=60,
+                 bold=False, italic=False, smooth=True,
                  foreground=(200, 200, 200), background=None, current_option=0, outline=1):
-        super().__init__(game, text, options, pos, font_name, font_size, bold, italic, smooth, foreground, background, current_option)
+        super().__init__(game, text, options, pos, font_name, font_size, bold, italic, smooth, foreground, background,
+                         current_option)
         self.text = self.static_text
         self.outline = outline
         self.update_text(self.text, self.smooth, self.foreground, self.background)
@@ -326,8 +330,10 @@ class ColorOptionButton(OptionButton):
     def update(self):
         """ Shows the surface of label on a game app display and the rectangle with picked color option """
 
-        pygame.draw.rect(self.game.app.DISPLAY, self.options[self.current_option], pygame.Rect([self.pos[0] + self.size[0], self.pos[1]], self.color_rect_size))
-        pygame.draw.rect(self.game.app.DISPLAY, self.foreground, pygame.Rect([self.pos[0] + self.size[0], self.pos[1]], self.color_rect_size), self.outline)
+        pygame.draw.rect(self.game.app.DISPLAY, self.options[self.current_option],
+                         pygame.Rect([self.pos[0] + self.size[0], self.pos[1]], self.color_rect_size))
+        pygame.draw.rect(self.game.app.DISPLAY, self.foreground,
+                         pygame.Rect([self.pos[0] + self.size[0], self.pos[1]], self.color_rect_size), self.outline)
         self.game.app.DISPLAY.blit(self.surface, self.pos)
 
     def next_option(self):
@@ -346,7 +352,8 @@ class Text(Label):
     This widget allows you to create multiple lines text.
     """
 
-    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(200, 200, 200), background=None, line_height=None):
+    def __init__(self, game, text="", pos=None, font_name="Gill Sans", font_size=60, bold=False, italic=False,
+                 smooth=True, foreground=(200, 200, 200), background=None, line_height=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
         if line_height is None:
@@ -360,14 +367,17 @@ class Text(Label):
         self.pos_list = [[self.pos[0], self.pos[1] + i * self.line_height] for i in range(len(self.text_list))]
         self.size_list = [self.surface_list[i].get_size() for i in range(self.lines)]
 
-        self.size = [max([self.surface_list[i].get_size()[0] for i in range(self.lines)]), self.lines * self.line_height]
+        self.size = [max([self.surface_list[i].get_size()[0] for i in range(self.lines)]),
+                     self.lines * self.line_height]
 
     def percent_y(self, percent=0, x=None):
         """ Places Text at given percent on the game app screen height """
 
         one_percent = self.game.app.HEIGHT / 100
         if x is None:
-            self.pos_list = [[(self.game.app.WIDTH - self.size_list[i][0]) / 2, percent * one_percent + i * self.line_height] for i in range(self.lines)]
+            self.pos_list = [
+                [(self.game.app.WIDTH - self.size_list[i][0]) / 2, percent * one_percent + i * self.line_height] for i
+                in range(self.lines)]
         else:
             self.pos_list = [[x, percent * one_percent + i * self.line_height] for i in range(self.lines)]
         return self
@@ -377,7 +387,8 @@ class Text(Label):
 
         self.pos[1] = y
         if x is None:
-            self.pos_list = [[(self.game.app.WIDTH - self.size_list[i][0]) / 2, y + i * self.line_height] for i in range(self.lines)]
+            self.pos_list = [[(self.game.app.WIDTH - self.size_list[i][0]) / 2, y + i * self.line_height] for i in
+                             range(self.lines)]
         else:
             self.pos_list = [[x, y + i * self.line_height] for i in range(self.lines)]
 
@@ -396,8 +407,10 @@ class Hexagon(Label):
     surface_size = [300, 300]
     height_scale = 3
 
-    def __init__(self, game, pos=None, color=(255, 255, 255), outline_color=(10, 10, 10), width=5, hexagon_size=None, hex_pos=None, energy=0,
-                 text="", font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True, foreground=(40, 40, 40), background=None):
+    def __init__(self, game, pos=None, color=(255, 255, 255), outline_color=(10, 10, 10), width=5, hexagon_size=None,
+                 hex_pos=None, energy=0,
+                 text="", font_name="Gill Sans", font_size=60, bold=False, italic=False, smooth=True,
+                 foreground=(40, 40, 40), background=None):
         super().__init__(game, text, pos, font_name, font_size, bold, italic, smooth, foreground, background)
 
         if hex_pos is None:
@@ -466,8 +479,10 @@ class Hexagon(Label):
 
         self.game.app.DISPLAY.blit(self.surface, [self.pos[0] + self.game.cords[0], self.pos[1] + self.game.cords[1]])
         if self.energy > 0:
-            self.game.app.DISPLAY.blit(self.text_surface, [self.pos[0] + self.game.cords[0] + self.surface_size[0] - 50 - self.energy * self.height_scale - self.text_surface.get_size()[0] / 2,
-                                                           self.pos[1] + self.game.cords[1] + self.surface_size[0] - 90 - self.energy * self.height_scale])
+            self.game.app.DISPLAY.blit(self.text_surface, [
+                self.pos[0] + self.game.cords[0] + self.surface_size[0] - 50 - self.energy * self.height_scale -
+                self.text_surface.get_size()[0] / 2,
+                self.pos[1] + self.game.cords[1] + self.surface_size[0] - 90 - self.energy * self.height_scale])
 
     def zoom(self, size, pos):
         """ Zooms Hexagon size and position """
@@ -544,14 +559,18 @@ class AnimatedRing(Surface):
         """ Draws ring on its surface """
 
         self.surface.fill(self.colorkey)
-        pygame.draw.circle(self.surface, sub_brightness(self.color, 100), [self.surface_size // 2, self.surface_size // 2], self.size // 2 + self.width // 2, self.width * 2)
-        pygame.draw.circle(self.surface, self.color, [self.surface_size // 2, self.surface_size // 2], self.size // 2, self.width)
+        pygame.draw.circle(self.surface, sub_brightness(self.color, 100),
+                           [self.surface_size // 2, self.surface_size // 2], self.size // 2 + self.width // 2,
+                           self.width * 2)
+        pygame.draw.circle(self.surface, self.color, [self.surface_size // 2, self.surface_size // 2], self.size // 2,
+                           self.width)
 
     def draw_circle(self):
         """ Draws circle on its surface """
 
         self.surface.fill(self.colorkey)
-        pygame.draw.circle(self.surface, sub_brightness(self.color, 100), [self.surface_size // 2, self.surface_size // 2], self.size // 2 + self.width * 2)
+        pygame.draw.circle(self.surface, sub_brightness(self.color, 100),
+                           [self.surface_size // 2, self.surface_size // 2], self.size // 2 + self.width * 2)
         pygame.draw.circle(self.surface, self.color, [self.surface_size // 2, self.surface_size // 2], self.size // 2)
 
     def set_alpha(self, alpha: int):
@@ -600,7 +619,8 @@ class Bloom2(Surface):
     Can be implemented in any visual object.
     """
 
-    def __init__(self, game, pos=None, r=50, light_source_r=5, resolution=20, color=(255, 255, 255), alpha=5, colorkey=(0, 0, 0), angle=0):
+    def __init__(self, game, pos=None, r=50, light_source_r=5, resolution=20, color=(255, 255, 255), alpha=5,
+                 colorkey=(0, 0, 0), angle=0):
         Surface.__init__(self, game, pos, [r, r], alpha, colorkey)
         self.angle = angle
         self.color = color
@@ -623,14 +643,16 @@ class Bloom2(Surface):
     def update(self):
         """ Shows the surface on a game app display """
 
+        # rotated_surface, rotated_pos = rotate(self.surface, self.pos, [self.s // 2, self.s // 2], i * self.steps)
+
         # draw light
         for i in range(self.r // self.scale):
-            # self.rotated_surface, self.rotated_pos = rotate(self.surface, self.pos, [self.s // 2, self.s // 2], i * self.steps)
             self.draw(self.r - i * self.scale)
             self.game.app.DISPLAY.blit(self.surface, self.pos)
 
         # draw light source
-        pygame.draw.circle(self.game.app.DISPLAY, add_brightness(self.color, 100), self.add_pos(self.pos, [self.r // 2, self.r // 2]), self.light_source_r)
+        pygame.draw.circle(self.game.app.DISPLAY, add_brightness(self.color, 100),
+                           self.add_pos(self.pos, [self.r // 2, self.r // 2]), self.light_source_r)
 
 
 class Bloom3(Surface):
@@ -640,7 +662,8 @@ class Bloom3(Surface):
     Allows to create glowy lines.
     """
 
-    def __init__(self, game, pos=None, r=50, light_source_r=2, resolution=20, color=(255, 255, 255), alpha=3, colorkey=(0, 0, 0), angle=0):
+    def __init__(self, game, pos=None, r=50, light_source_r=2, resolution=20, color=(255, 255, 255), alpha=3,
+                 colorkey=(0, 0, 0), angle=0):
         Surface.__init__(self, game, pos, [r, r], alpha, colorkey)
         self.angle = angle
         self.color = color
@@ -666,7 +689,6 @@ class Bloom3(Surface):
 
         # draw light
         for i in range(self.r // self.scale):
-            # self.rotated_surface, self.rotated_pos = rotate(self.surface, self.pos, [self.s // 2, self.s // 2], i * self.steps)
             self.draw(self.r - i * self.scale)
             self.game.app.DISPLAY.blit(self.surface, self.sub_pos(self.pos, [self.r // 2, self.r // 2]))
 

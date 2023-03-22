@@ -36,7 +36,8 @@ def touched_right(x1: int, width1: int, x2: int, width2: int) -> bool:
 def touched(x1: int, weight1: int, x2: int, weight2: int, y1: int, height1: int, y2: int, height2: int) -> bool:
     """ Checks if one object is touching other object """
 
-    if (x1 <= x2 <= (x1 + weight1) and y1 <= y2 <= (y1 + height1)) or (x1 <= (x2 + weight2) and (x1 + weight1) >= x2 and y1 <= (y2 + height2) and (y1 + height1) >= y2):
+    if (x1 <= x2 <= (x1 + weight1) and y1 <= y2 <= (y1 + height1)) or (
+            x1 <= (x2 + weight2) and (x1 + weight1) >= x2 and y1 <= (y2 + height2) and (y1 + height1) >= y2):
         return True
     else:
         return False
@@ -57,7 +58,8 @@ def rad_to_deg(radian: float) -> float:
 def rgb_to_hex(r=0, g=0, b=0) -> str:
     """ Converts rgb value to hex value """
 
-    return "#" + str(hex(r))[2:].rjust(2, "0").upper() + str(hex(g))[2:].rjust(2, "0").upper() + str(hex(b))[2:].rjust(2, "0").upper()
+    return "#" + str(hex(r))[2:].rjust(2, "0").upper() + str(hex(g))[2:].rjust(2, "0").upper() + str(hex(b))[2:].rjust(
+        2, "0").upper()
 
 
 def distance_to_obj(pos1=None, pos2=None) -> float:
